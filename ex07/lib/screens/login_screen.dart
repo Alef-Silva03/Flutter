@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen>
   void fazerLogin() {
     if (usuarioCadastrado != null &&
         loginController.text == usuarioCadastrado!.login &&
-        senhaController.text == usuarioCadastrado!.Senha) {
+        senhaController.text == usuarioCadastrado!.senha) {
       Navigator.push(
         context,
         MaterialPageRoute(

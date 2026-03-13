@@ -45,7 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
       final usuario = UserModel(
         login: login.text,
-        Senha: senha.text,
+        senha: senha.text,
         nome: nome.text,
         cpf: cpf.text,
         email: email.text,
