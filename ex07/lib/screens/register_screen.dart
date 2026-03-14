@@ -3,6 +3,10 @@ import '../models/user_model.dart';
 // ignore: depend_on_referenced_packages
 import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // importa arquivos externos
+import 'package:ex07/services/user_service.dart';
+import '../utils/cpf_validator.dart';
+// ignore: depend_on_referenced_packages
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,7 +17,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final formKey = GlobalKey<FormState>();
-
+  
   final login = TextEditingController();
   final senha = TextEditingController();
   final confirmarSenha = TextEditingController();
@@ -23,6 +27,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final data = TextEditingController();
 
   File? imagem;
+
+  final cpfMask = MaskTextInputFormatter(mask: '###.###.###-##');
 
   Future<void> selecionarImagem() async {
     final picker = ImagePicker();
@@ -35,7 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  void cadastrar() {
+  void cadastrar() async{
     if (formKey.currentState!.validate()) {
       if (senha.text != confirmarSenha.text) {
         ScaffoldMessenger.of(
@@ -44,6 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
       final usuario = UserModel(
+        id: null,
         login: login.text,
         senha: senha.text,
         nome: nome.text,
@@ -52,7 +59,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         dataNascimento: data.text,
         foto: imagem?.path,
       );
-      Navigator.pop(context, usuario);
+      //Navigator.pop(context, usuario);
+      bool sucesso = await UserService.register(usuario);
+      if (sucesso){
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Cadastro realizado com Sucesso"))
+        );
+        // ignore: use_build_context_synchronously
+        Navigator.pop(context, usuario);
+      }else{
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erro ao Cadastrar")),
+        );
+      }
     }
   }
 
@@ -77,14 +98,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              campo(login, "Login", Icons.person),
-              campo(senha, "Senha", Icons.lock, true),
-              campo(confirmarSenha, "Confirmar Senha", Icons.lock, true),
-              campo(nome, "Nome", Icons.badge),
-              campo(cpf, "CPF", Icons.credit_card),
-              campo(email, "Email", Icons.email),
-              campo(data, "Data de Nascimento", Icons.calendar_today),
+
+              campoPadrao(login, "Login", Icons.person),
+
+              campoSenha(senha, "Senha"),
+              campoSenha(confirmarSenha, "Confirmar Senha"),
+
+              campoPadrao(nome, "Nome", Icons.badge),
+
+              //  CPF COM MÁSCARA E VALIDAÇÃO
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: TextFormField(
+                  controller: cpf,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [cpfMask],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Campo obrigatório";
+                    }
+                    if (!CPFValidator.validar(value)) {
+                      return "CPF inválido";
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "CPF",
+                    prefixIcon: Icon(Icons.credit_card),
+                  ),
+                ),
+              ),
+
+              campoEmail(email),
+
+              campoPadrao(data, "Data de Nascimento", Icons.calendar_today),
+
               const SizedBox(height: 20),
+
               ElevatedButton(
                 onPressed: cadastrar,
                 child: const Text("Cadastrar"),
@@ -95,25 +145,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-   Widget campo(
+   Widget campoPadrao(
     TextEditingController controller,
     String label,
-    IconData icon, [
-    bool senha = false,
-  ]) {
+    IconData icon,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextFormField(
         controller: controller,
-        obscureText: senha,
-        // Validação simples: não permite campo vazio
-        validator: (value) => value!.isEmpty ? "Campo obrigatório" : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? "Campo obrigatório" : null,
+        decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
+      ),
+    );
+  }
+
+  Widget campoSenha(TextEditingController controller, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: TextFormField(
+        controller: controller,
+        obscureText: true,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Campo obrigatório";
+          }
+          if (value.length < 6) {
+            return "Senha deve ter no mínimo 6 caracteres";
+          }
+          return null;
+        },
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon),
-        ), // InputDecoration
-      ), // TextFormField
-    ); // Padding
+          prefixIcon: const Icon(Icons.lock),
+        ),
+      ),
+    );
+  }
+
+  Widget campoEmail(TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.emailAddress,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Campo obrigatório";
+          }
+          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+            return "Email inválido";
+          }
+          return null;
+        },
+        decoration: const InputDecoration(
+          labelText: "Email",
+          prefixIcon: Icon(Icons.email),
+        ),
+      ),
+    );
   }
 }
-
