@@ -1,4 +1,4 @@
-import 'dart:ui';
+//import 'dart:ui';
 
 class CPFValidator {
   static bool validar(String cpf){

@@ -16,18 +16,30 @@ router.post(
         });
     });
 
-router.post('/login',(req,res)=>{
-    const {login, senha} = req.body;
+router.post('/login', (req, res) => {
+    const { login, senha } = req.body;
     const sql = `select * from usuarios where login = ? and senha = ?`;
-    db.query(sql,[login,senha],(err,result)=>{
-        if(err){
-            return res.status(500).json({erro:err});
+    db.query(sql, [login, senha], (err, result) => {
+        if (err) {
+            return res.status(500).json({ erro: err });
         }
-        if(result.length > 0){
+        if (result.length > 0) {
             res.json(result[0]);
-        }else{
-            res.status(401).json({menssage: "Usuário Inválido"});
+        } else {
+            res.status(401).json({ menssage: "Usuário Inválido" });
         }
     });
 });
+
+router.get('/', (req, res)=>{
+    const sql = "select * from usuarios";
+
+    db.query(sql, (err,result)=>{
+        if(err){
+            return res.status(500).json({erro:err});
+        }
+        res.status(200).json(result);
+    })
+}
+);
 module.exports = router;

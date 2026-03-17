@@ -27,7 +27,7 @@ class UserService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"login":login,"senha":senha}),
     );
-    if(response.statusCode==201){
+    if(response.statusCode==200){
       return UserModel.fromJson(jsonDecode(response.body));
     }else{
       // ignore: avoid_print

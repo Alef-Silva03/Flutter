@@ -26,7 +26,7 @@ class UserModel{
       "nome": nome,
       "cpf": cpf,
       "email": email,
-      "dataNascimento": dataNascimento,
+      "data_nascimento": dataNascimento,
       "foto": foto,
     };
   }
@@ -39,7 +39,7 @@ class UserModel{
       nome:json["nome"],
       cpf:json["cpf"],
       email:json["email"],
-      dataNascimento:json["dataNascimento"],
+      dataNascimento:json["data_nascimento"],
       foto:json["foto"],
     );
   }
