@@ -1,218 +1,166 @@
+import 'package:ex07/screens/admin_dashboard.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
-import 'cart_screen.dart';
-import 'profile_screen.dart';
-import 'orders_screen.dart';
+import '../services/product_service.dart';
 import 'product_detail_screen.dart';
+import 'cart_screen.dart';
+import 'orders_screen.dart';
+import 'profile_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
+  final int userId;
   final String nome;
 
-  const HomeScreen({super.key, required this.nome});
+  const HomeScreen({super.key, required this.userId, required this.nome});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _index = 0;
+  List<ProductModel> produtos = [];
+  bool loading = true;
 
-  List<ProductModel> produtos = [
-    ProductModel(
-      nome: "Maçã",
-      preco: 5.50,
-      descricao: "Maçã fresca e orgânica",
-      imagem: "assets/imagem/maca.jpg",
-    ),
-    ProductModel(
-      nome: "Banana",
-      preco: 3.20,
-      descricao: "Banana madura e doce",
-      imagem: "assets/imagem/banana.jpg",
-    ),
-  ];
+  // Define o baseUrl dependendo da plataforma
+  String get baseUrl => 
+      kIsWeb ? "http://localhost:3000" : "http://10.0.2.2:3000";
 
-  List<ProductModel> carrinho = [];
+  @override
+  void initState() {
+    super.initState();
+    carregarProdutos();
+  }
+
+  Future<void> carregarProdutos() async {
+    setState(() => loading = true);
+
+    try {
+      produtos = await ProductService.listar();
+    } catch (e) {
+      produtos = [];
+      debugPrint("Erro ao carregar produtos: $e");
+    }
+
+    setState(() => loading = false);
+  }
+
+  // Recarrega a Home ao voltar de outra tela
+  Future<void> navegarParaAdmin() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AdminProductsScreen()),
+    );
+    await carregarProdutos(); // Atualiza lista depois que voltar
+  }
 
   @override
   Widget build(BuildContext context) {
-    final telas = [
-      _paginaHome(),
-      CartScreen(carrinho: carrinho),
-      ProfileScreen(nome: widget.nome),
-      const OrdersScreen(),
-    ];
-
     return Scaffold(
-      body: telas[_index],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        selectedItemColor: Colors.blue,
-        onTap: (i) {
-          setState(() {
-            _index = i;
-          });
-        },
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.store), label: "Home"),
-          BottomNavigationBarItem(
-            label: "Carrinho",
-            icon: Stack(
-              children: [
-                const Icon(Icons.shopping_cart),
-                if (carrinho.isNotEmpty)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
+      appBar: AppBar(title: Text("Olá, ${widget.nome}"), centerTitle: true),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : produtos.isEmpty
+          ? const Center(child: Text("Nenhum produto encontrado"))
+          : GridView.builder(
+              padding: const EdgeInsets.all(10),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+              ),
+              itemCount: produtos.length,
+              itemBuilder: (context, index) {
+                final p = produtos[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductDetailScreen(produto: p),
                       ),
-                      child: Text(
-                        carrinho.length.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: (p.imagem.isNotEmpty)
+                              ? Image.network(
+                                  "$baseUrl/uploads/${p.imagem}",
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) =>
+                                      const Icon(Icons.broken_image, size: 80),
+                                )
+                              : const Icon(Icons.image, size: 80),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            children: [
+                              Text(
+                                p.nome,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text("R\$ ${p.preco}"),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-              ],
+                );
+              },
             ),
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Perfil",
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt),
-            label: "Pedidos",
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ================= HOME PRINCIPAL =================
-
-  Widget _paginaHome() {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                "Seja bem-vindo, ${widget.nome}!",
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+            
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) async {
+          if (index == 0) return; // Home
+          if (index == 4) {
+            await navegarParaAdmin(); // Admin
+          }
+         /* if (index == 1) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CartScreen()),
+            );
+          } else if (index == 2) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OrderScreen(userId: widget.userId),
               ),
-            ),
-            _atalhosRapidos(),
-            const SizedBox(height: 10),
-            _listaProdutos(),
-          ],
-        ),
-      ),
-    );
-  }
-  // ================= ATALHOS RÁPIDOS =================
-
-  Widget _atalhosRapidos() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 4,
-        children: [
-          _botaoAtalho(
-            icon: Icons.shopping_cart,
+            );
+          } else if (index == 3) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    ProfileScreen(nome: widget.nome, userId: widget.userId),
+              ),
+            );
+          } else if (index == 4) {
+            await navegarParaAdmin(); // Admin
+          }*/
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
             label: "Carrinho",
-            onTap: () => setState(() => _index = 1),
           ),
-          _botaoAtalho(
-            icon: Icons.person,
-            label: "Perfil",
-            onTap: () => setState(() => _index = 2),
-          ),
-          _botaoAtalho(
-            icon: Icons.list_alt,
-            label: "Pedidos",
-            onTap: () => setState(() => _index = 3),
-          ),
-          _botaoAtalho(
-            icon: Icons.store,
-            label: "Produtos",
-            onTap: () => setState(() => _index = 0),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: "Pedidos"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.admin_panel_settings),
+            label: "Admin",
           ),
         ],
       ),
-    );
-  }
-
-  Widget _botaoAtalho({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.blue.shade100,
-            child: Icon(icon, color: Colors.blue),
-          ),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 12)),
-        ],
-      ),
-    );
-  }
-
-  // ================= LISTA DE PRODUTOS =================
-
-  Widget _listaProdutos() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: produtos.length,
-      itemBuilder: (context, index) {
-        final produto = produtos[index];
-
-        return Card(
-          margin: const EdgeInsets.all(10),
-          child: ListTile(
-            leading: Image.asset(produto.imagem),
-            title: Text(produto.nome),
-            subtitle: Text("R\$ ${produto.preco.toStringAsFixed(2)}"),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProductDetailScreen(produto: produto),
-                ),
-              );
-
-              if (result != null) {
-                setState(() {
-                  carrinho.add(produto);
-                });
-              }
-            },
-          ),
-        );
-      },
     );
   }
 }
