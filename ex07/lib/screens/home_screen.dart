@@ -1,11 +1,13 @@
+
 import 'package:ex07/screens/admin_dashboard.dart';
+import 'package:ex07/screens/order_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
 import 'product_detail_screen.dart';
 import 'cart_screen.dart';
-import 'orders_screen.dart';
+
 import 'profile_screen.dart';
 
 
@@ -13,7 +15,8 @@ class HomeScreen extends StatefulWidget {
   final int userId;
   final String nome;
 
-  const HomeScreen({super.key, required this.userId, required this.nome});
+  const HomeScreen({Key? key, required this.userId, required this.nome})
+    : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -25,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Define o baseUrl dependendo da plataforma
   String get baseUrl => 
-      kIsWeb ? "http://localhost:3000" : "http://10.0.2.2:3000";
+      kIsWeb ? "http://localhost:3000" : "http://127.0.0.1:3000";
 
   @override
   void initState() {
@@ -90,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? Image.network(
                                   "$baseUrl/uploads/${p.imagem}",
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) =>
+                                  errorBuilder: (_, __, ___) =>
                                       const Icon(Icons.broken_image, size: 80),
                                 )
                               : const Icon(Icons.image, size: 80),
@@ -115,15 +118,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         onTap: (index) async {
           if (index == 0) return; // Home
-          if (index == 4) {
-            await navegarParaAdmin(); // Admin
-          }
-         /* if (index == 1) {
+          if (index == 1) {
             await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const CartScreen()),
@@ -145,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           } else if (index == 4) {
             await navegarParaAdmin(); // Admin
-          }*/
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),

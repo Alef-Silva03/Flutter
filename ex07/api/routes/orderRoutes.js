@@ -1,18 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/orderController');
+const controller = require('../controllers/orderController'); // caminho correto
+//novas
+// Criar pedido
+router.post('/', controller.create);
 
+// Listar pedidos de um usuário
+router.get('/:usuarioId', controller.listar);
+
+// Atualizar status
+router.put('/:id', controller.atualizarStatus);
+
+// Deletar pedido
+router.delete('/:id', controller.deletar);
+
+
+// "Banco" em memória
 let pedidos = [];
 let itensPedidos = [];
 let pedidoId = 1;
 
-router.post('/', controller.create);
-router.get('/:usuarioId', controller.listar);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
-
-
-//inserir pedido
 router.post('/', (req, res) => {
   const { usuario_id, total, itens } = req.body;
 
@@ -46,7 +53,6 @@ router.post('/', (req, res) => {
   res.status(201).json(novoPedido);
 });
 
-//mostrar pedidos do usuário
 
 router.get('/:usuarioId', (req, res) => {
   const usuarioId = parseInt(req.params.usuarioId);
@@ -57,7 +63,6 @@ router.get('/:usuarioId', (req, res) => {
 });
 
 
-// buscar pedidos
 router.get('/detalhe/:id', (req, res) => {
   const id = parseInt(req.params.id);
 
@@ -70,7 +75,7 @@ router.get('/detalhe/:id', (req, res) => {
   res.json(pedido);
 });
 
-// buscar itens do pedido
+
 router.get('/itens/:pedidoId', (req, res) => {
   const pedidoId = parseInt(req.params.pedidoId);
 
@@ -79,8 +84,8 @@ router.get('/itens/:pedidoId', (req, res) => {
   res.json(itens);
 });
 
-//atualizar status do pedido
 
+//  ATUALIZAR PEDIDO 
 router.put('/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const { status } = req.body;
@@ -98,8 +103,8 @@ router.put('/:id', (req, res) => {
   res.status(200).json(pedido);
 });
 
-router.put('/:id',controller.atualizarStatus);
- //excluir pedido 
+router.put('/:id', controller.atualizarStatus);
+
 
 router.delete('/:id', (req, res) => {
   const id = parseInt(req.params.id);
@@ -112,21 +117,29 @@ router.delete('/:id', (req, res) => {
   res.json({ mensagem: "Pedido deletado com sucesso" });
 });
 
+
+//novo código de teste
 router.put('/pedidos/:id', (req, res) => {
   console.log("REQ PARAMS:", req.params);
   console.log("REQ BODY:", req.body);
-  
-  const {id} = req.params;
-  const {status} = req.body;
 
-  const sql = "update pedidos set status = ? where id = ?";
+  const { id } = req.params;
+  const { status } = req.body;
 
-  db.query(sql, [status, id], (err, result)=>{
-    if (err){
-      console.log("Erro SQL:", err);
+  const sql = "UPDATE pedidos SET status = ? WHERE id = ?";
+
+  db.query(sql, [status, id], (err, result) => {
+    if (err) {
+      console.log("ERRO SQL:", err);
+      return res.status(500).json(err);
     }
-    console.log("Result: ", result);
-    res.json({ok:true});
+
+    console.log("RESULT:", result);
+
+    res.json({ ok: true });
   });
-})
+});
+
+
+
 module.exports = router;

@@ -1,5 +1,5 @@
-import 'package:ex07/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -15,7 +15,7 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Sistema de Login',
       theme: AppTheme.lightTheme,
-      home: const LoginScreen(),
+      home: const  LoginScreen(),
     );
   }
 }

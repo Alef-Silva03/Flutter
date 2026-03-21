@@ -6,11 +6,11 @@ const db = mysql.createConnection({
     password: '',
     database: 'sistema_login'
 });
-db.connect((err) => {
+db.connect((err)=>{
     if (err) {
-        console.log("Erro ao conectar ao banco de dados: ", err);
-    } else {
+        console.log("Erro ao conectar com o banco",err);
+    }else{
         console.log("Conectado com Sucesso");
-    }
+    }    
 });
 module.exports = db;

@@ -12,7 +12,8 @@ class ProductModel {
     required this.descricao,
     required this.imagem,
   });
-  factory ProductModel.fromJson(Map json){
+
+  factory ProductModel.fromJson(Map json) {
     return ProductModel(
       id: json["id"],
       nome: json["nome"],

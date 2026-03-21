@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -29,6 +30,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(
+       
         context,
       ).showSnackBar(SnackBar(content: Text('Erro ao carregar produtos: $e')));
     }

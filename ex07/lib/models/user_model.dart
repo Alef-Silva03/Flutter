@@ -1,4 +1,3 @@
-
 class UserModel{
   final int? id;
   final String login;
@@ -7,11 +6,11 @@ class UserModel{
   final String cpf;
   final String email;
   final String dataNascimento;
-  final String? foto; // espera um parâmetro
-  
-  UserModel({
+  final String? foto; //espera um parâmetro
+
+  UserModel({ // construtor
     required this.id,
-    required this.login,
+    required this.login, // this = encapsulamento
     required this.senha,
     required this.nome,
     required this.cpf,
@@ -19,17 +18,19 @@ class UserModel{
     required this.dataNascimento,
     this.foto,
   });
+  //Envia para API
   Map<String, dynamic> toJson(){
     return{
-      "login": login,
-      "senha": senha,
-      "nome": nome,
-      "cpf": cpf,
-      "email": email,
-      "data_nascimento": dataNascimento,
-      "foto": foto,
+      "login":login,
+      "senha":senha,
+      "nome":nome,
+      "cpf":cpf,
+      "email":email,
+      "data_nascimento":dataNascimento,
+      "foto":foto,
     };
   }
+
   //Recebe na API
   factory UserModel.fromJson(Map<String,dynamic> json){
     return UserModel(
@@ -44,3 +45,4 @@ class UserModel{
     );
   }
 }
+

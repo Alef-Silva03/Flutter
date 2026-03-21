@@ -1,14 +1,14 @@
 import 'dart:convert';
+
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import '../models/product_model.dart';
 
 class ProductService {
   //  Ajuste aqui para seu IP:
-  static const String baseUrlMobile = "http://localhost:3000";
-  static const String baseUrlWeb = "http://localhost:3000";
+  static const String baseUrlMobile = "http://127.0.0.1:3000";
+  static const String baseUrlWeb = "http://127.0.0.1:3000";
 
   static String get url =>
       kIsWeb ? "$baseUrlWeb/produtos" : "$baseUrlMobile/produtos";
